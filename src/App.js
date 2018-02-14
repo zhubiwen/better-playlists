@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 let defaultTextColor = '#fff'
@@ -38,6 +37,7 @@ class PlayList extends Component {
           <li>Song 1</li>
           <li>Song 2</li>
           <li>Song 3</li>
+          <li>Song 4</li>
         </ul>
       </div>
     )
