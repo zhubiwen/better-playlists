@@ -10,6 +10,7 @@ class Aggregate extends Component {
     return(
       <div style = {{...defaultStyle, width:"40%", display: "inline-block"}}>
         <h2 > Number Text</h2>
+        <h2>dfsfdsf</h2>
       </div>
     );
   }
