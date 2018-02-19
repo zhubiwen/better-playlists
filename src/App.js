@@ -5,11 +5,54 @@ let defaultTextColor = '#fff'
 let defaultStyle = {
   color: defaultTextColor
 }
-class Aggregate extends Component {
+
+let fakeServerData = {
+  user:{
+    name:"daviaad",
+    playList: [
+      {
+       name: "My Faviourates",
+       songs:[{name:'Beat it',duration:12134},{name:'Hello World',duration:312},{name:'Awesome Me',duration:1342}]
+      },
+      {
+        name: "My Hi",
+        songs:[{name:'Helllow',duration:41},{name:'Gee',duration:89}]
+      },
+      {
+        name: "Weekly Design",
+        songs:[{name:'Animal Kindom', duration:891},{name:'K',duration:90}]
+      },
+      {
+        name: "Yearly Awesomeness",
+        songs:[{name:'Mrs Errl',duration:781},{name:'Hello World',duration:12},{name:'Awesome Me',duration:11}]
+      },
+    ]
+  }
+
+}
+
+class PlayListCounter extends Component {
   render(){
     return(
       <div style = {{...defaultStyle, width:"40%", display: "inline-block"}}>
-        <h2 > Number Text</h2>
+        <h2 > {this.props.playList.length} PlayLists</h2>
+        <h2>dfsfdsf</h2>
+      </div>
+    );
+  }
+}
+
+class HoursCounter extends Component {
+  render(){
+    let allSongs = this.props.playList.reduce((songs,eachPlaylist)=> {
+      return songs.concat(eachPlaylist.songs)
+    },[])
+    let totalDuration = allSongs.reduce((sum, eachSong)=>{
+      return sum + eachSong.duration
+    },0)
+    return(
+      <div style = {{...defaultStyle, width:"40%", display: "inline-block"}}>
+        <h2 > {Math.round(totalDuration/60)} Hours</h2>
         <h2>dfsfdsf</h2>
       </div>
     );
@@ -46,21 +89,42 @@ class PlayList extends Component {
 }
 
 class App extends Component {
-  render() {
-    let name = 'David'
-    return (
-      <div className="App">
-        <h1>Title</h1>
-        <Aggregate/>
-        <Aggregate/>
-        <Filter/>
-        <PlayList/>
-        <PlayList/>
-        <PlayList/>
-        <PlayList/>
-      </div>
-    );
+  constructor(){
+    super();
+    this.state = {
+      serverData:{}
+    }
   }
+
+  componentDidMount(){
+
+    setTimeout(()=>{
+      this.setState ({
+        serverData:fakeServerData
+      })
+    }, 1000)
+   }
+
+render(){
+  return(
+    <div className="App">
+      {this.state.serverData.user ?
+        <div>
+          <h1>{this.state.serverData.user.name} PlayList</h1>
+          <PlayListCounter playList = {this.state.serverData.user.playList}/>
+          <HoursCounter playList = {this.state.serverData.user.playList}/>
+          <Filter/>
+          <PlayList/>
+          <PlayList/>
+          <PlayList/>
+          <PlayList/>
+        </div> : <h1 >loading...</h1>
+      }
+    </div>
+  )
+}
+
+
 }
 
 export default App;
