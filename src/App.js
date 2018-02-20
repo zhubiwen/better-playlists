@@ -109,19 +109,21 @@ class App extends Component {
    }
 
 render(){
+
+let playListToRender = this.state.serverData.user ? this.state.serverData.user.playList.filter(playList =>
+  playList.name.toLowerCase().includes(
+    this.state.filterString.toLowerCase())): []
+
   return(
     <div className="App">
       {this.state.serverData.user ?
         <div>
           <h1>{this.state.serverData.user.name} PlayList</h1>
-          <PlayListCounter playList = {this.state.serverData.user.playList}/>
-          <HoursCounter playList = {this.state.serverData.user.playList}/>
+          <PlayListCounter playList = {playListToRender}/>
+          <HoursCounter playList = {playListToRender}/>
           <Filter onTextChnage={text=>this.setState({filterString:text})}/>
 
-          {this.state.serverData.user.playList.filter(playList =>
-            playList.name.toLowerCase().includes(
-              this.state.filterString.toLowerCase()))
-            .map(playList =>
+          {playListToRender.map(playList =>
               <PlayList playList={playList}/>
           )}
 
