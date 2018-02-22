@@ -118,20 +118,81 @@ class App extends Component {
 
       ));
 
-    fetch ('https://api.spotify.com/v1/browse/featured-playlists', {
-        headers: {'Authorization': 'Bearer ' + accessToken}
-    }).then(response=> response.json())
-    .then(data => this.setState({
-      playList:data.playlists.items.map(item => {
-        console.log(data.playlists.items)
+
+
+    fetch('https://api.spotify.com/v1/browse/featured-playlists', {
+      headers: {'Authorization': 'Bearer ' + accessToken}
+    }).then(response => response.json())
+    .then(playlistData => {
+      let playlists = playlistData.playlists.items
+      let trackDataPromises = playlists.map(playlist => {
+        let responsePromise = fetch(playlist.tracks.href, {
+          headers: {'Authorization': 'Bearer ' + accessToken}
+        })
+        let trackDataPromise = responsePromise
+          .then(response => response.json())
+        return trackDataPromise
+      })
+      let allTracksDataPromises =
+        Promise.all(trackDataPromises)
+      let playlistsPromise = allTracksDataPromises.then(trackDatas => {
+        trackDatas.forEach((trackData, i) => {
+          playlists[i].trackDatas = trackData.items
+            .map(item => item.track)
+            .map(trackData => ({
+              name: trackData.name,
+              duration: trackData.duration_ms / 1000
+            }))
+        })
+        return playlists
+      })
+      return playlistsPromise
+    })
+    .then(playlists => this.setState({
+      playlists: playlists.map(item => {
         return {
-          name:item.name,
-          songs:[],
-          imageUrl:item.images[0].url
+          name: item.name,
+          imageUrl: item.images[0].url,
+          songs: item.trackDatas.slice(0,3)
         }
-      }
-    )
+    })
     }))
+
+
+  //   fetch ('https://api.spotify.com/v1/browse/featured-playlists', {
+  //       headers: {'Authorization': 'Bearer ' + accessToken}
+  //   }).then(response => response.json())
+  //   .then(playlistdata => {
+  //           let playlists = playlistdata.playLists.items
+  //           let trackDataPromises = playlists.map(playList => {
+  //             let responsePromise = fetch(playList.tracks.href, { headers: {'Authorization': 'Bearer ' + accessToken}})
+  //           })
+  //           let trackDataPromise = responsePromise.then(response => response.json())
+  //           return trackDataPromise
+  //         })
+  //
+  //   let allTrackskDataPromises =
+  //   Promise.all(trackDataPromise)
+  //   let playlistPromise =allTrackskDataPromises.then(trackDatas=> {
+  //     trackDatas.forEach((trackData,i) => {
+  //       playlists[i].trackDatas = trackData.items
+  //     })
+  //     return playlists
+  //   })
+  //   return playlistPromise
+  // })
+  //
+  //   .then(playlists => this.setState({
+  //     playList:playlists.map(item => {
+  //       console.log(data.playlists.items)
+  //       return {
+  //         name:item.name,
+  //         songs:[],
+  //         imageUrl:item.images[0].url
+  //       }
+  //     }
+  //   )
+  //   }))
 
 
     // setTimeout(()=>{
@@ -146,9 +207,9 @@ class App extends Component {
 render(){
 
 let playListToRender = this.state.serverData.user &&
-this.state.playList
+this.state.playlists
             ?
-this.state.playList.filter(playList =>
+this.state.playlists.filter(playList =>
   playList.name.toLowerCase().includes(
     this.state.filterString.toLowerCase()))
 
