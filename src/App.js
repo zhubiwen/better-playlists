@@ -1,35 +1,36 @@
 import React, { Component } from 'react';
 import './App.css';
+import queryString from 'query-string';
 
 let defaultTextColor = '#fff'
 let defaultStyle = {
   color: defaultTextColor
 }
 
-let fakeServerData = {
-  user:{
-    name:"daviaad",
-    playList: [
-      {
-       name: "My Faviourates",
-       songs:[{name:'Beat it',duration:12134},{name:'Hello World',duration:312},{name:'Awesome Me',duration:1342}]
-      },
-      {
-        name: "My Hi",
-        songs:[{name:'Helllow',duration:41},{name:'Gee',duration:89}]
-      },
-      {
-        name: "Weekly Design",
-        songs:[{name:'Animal Kindom', duration:891},{name:'K',duration:90}]
-      },
-      {
-        name: "Yearly Awesomeness",
-        songs:[{name:'Mrs Errl',duration:781},{name:'Hello World',duration:12},{name:'Awesome Me',duration:11}]
-      },
-    ]
-  }
-
-}
+// let fakeServerData = {
+//   user:{
+//     name:"daviaad",
+//     playList: [
+//       {
+//        name: "My Faviourates",
+//        songs:[{name:'Beat it',duration:12134},{name:'Hello World',duration:312},{name:'Awesome Me',duration:1342}]
+//       },
+//       {
+//         name: "My Hi",
+//         songs:[{name:'Helllow',duration:41},{name:'Gee',duration:89}]
+//       },
+//       {
+//         name: "Weekly Design",
+//         songs:[{name:'Animal Kindom', duration:891},{name:'K',duration:90}]
+//       },
+//       {
+//         name: "Yearly Awesomeness",
+//         songs:[{name:'Mrs Errl',duration:781},{name:'Hello World',duration:12},{name:'Awesome Me',duration:11}]
+//       },
+//     ]
+//   }
+//
+// }
 
 class PlayListCounter extends Component {
   render(){
@@ -76,7 +77,7 @@ class PlayList extends Component {
   render() {
     return (
       <div style ={{...defaultStyle, display:'inline-block', width:"25%"}}>
-        <img />
+        <img src={this.props.playList.imageUrl} style={{width:'150px'}}/>
         <h3>{this.props.playList.name}</h3>
         <ul>
           {
@@ -99,26 +100,63 @@ class App extends Component {
 
   componentDidMount(){
 
-    setTimeout(()=>{
-      this.setState ({
-        serverData:fakeServerData,
-        filterString:" "
-      })
-    }, 1000);
+    let parsed = queryString.parse(window.location.search);
+    let accessToken = parsed.access_token;
+
+    fetch ('https://api.spotify.com/v1/me', {
+        headers: {'Authorization': 'Bearer ' + accessToken}
+    }).then(response=> response.json())
+    .then(data =>this.setState(
+
+      {
+        serverData:
+          {user: {name:data.display_name}}
+      }
+
+      ));
+
+    fetch ('https://api.spotify.com/v1/browse/featured-playlists', {
+        headers: {'Authorization': 'Bearer ' + accessToken}
+    }).then(response=> response.json())
+    .then(data => this.setState({
+      playList:data.playlists.items.map(item => {
+        console.log(data.playlists.items)
+        return {
+          name:item.name,
+          songs:[],
+          imageUrl:item.images[0].url
+        }
+      }
+    )
+    }))
+
+
+    // setTimeout(()=>{
+    //   this.setState ({
+    //     serverData:fakeServerData,
+    //     filterString:" "
+    //   })
+    // }, 1000);
 
    }
 
 render(){
 
-let playListToRender = this.state.serverData.user ? this.state.serverData.user.playList.filter(playList =>
+let playListToRender = this.state.serverData.user &&
+this.state.playList
+            ?
+this.state.playList.filter(playList =>
   playList.name.toLowerCase().includes(
-    this.state.filterString.toLowerCase())): []
+    this.state.filterString.toLowerCase()))
+
+    : []
 
   return(
     <div className="App">
       {this.state.serverData.user ?
         <div>
           <h1>{this.state.serverData.user.name} PlayList</h1>
+
           <PlayListCounter playList = {playListToRender}/>
           <HoursCounter playList = {playListToRender}/>
           <Filter onTextChnage={text=>this.setState({filterString:text})}/>
@@ -127,7 +165,8 @@ let playListToRender = this.state.serverData.user ? this.state.serverData.user.p
               <PlayList playList={playList}/>
           )}
 
-        </div> : <h1 >loading...</h1>
+        </div> : <button onClick={()=>window.location='http://localhost:8888/login'}
+        style={{padding :'20px','fontSize':'50px', 'marginTop':'20px'}}> Sign in with Spotify</button>
       }
     </div>
   )
