@@ -4,7 +4,8 @@ import queryString from 'query-string';
 
 let defaultTextColor = '#fff'
 let defaultStyle = {
-  color: defaultTextColor
+  color: defaultTextColor,
+  'font-family':'Open-Sans'
 }
 
 // let fakeServerData = {
@@ -50,8 +51,15 @@ class HoursCounter extends Component {
     let totalDuration = allSongs.reduce((sum, eachSong)=>{
       return sum + eachSong.duration
     },0)
+    let isTooLow = totalDuration < 600
     return(
-      <div style = {{...defaultStyle, width:"40%", display: "inline-block"}}>
+      <div style = {{
+        ...defaultStyle,
+        width:"40%",
+        display: "inline-block",
+        color : isTooLow ? 'red':'white',
+        'font-weight' : isTooLow ? 'bold':'normal'
+      }}>
         <h2 > {Math.round(totalDuration/60)} Hours</h2>
       </div>
     );
@@ -64,9 +72,19 @@ class Filter extends Component{
 
   render(){
     return (
-      <div style ={defaultStyle}>
+      <div style ={{...defaultStyle,
+        fontSize:'20px',
+      }}>
         <img/>
-        <input onChange={event=> this.props.onTextChnage(event.target.value)} type = 'text'/>
+        <input style ={{
+            ...defaultStyle,
+            "padding":'10px',
+            color:'black',
+            'font-size':'20px',
+            'margin-right':'10px',
+            'margin-bottom':'20px'
+        }}
+        onChange={event=> this.props.onTextChnage(event.target.value)} type = 'text'/>
         Filter
       </div>
     )
@@ -76,10 +94,18 @@ class Filter extends Component{
 class PlayList extends Component {
   render() {
     return (
-      <div style ={{...defaultStyle, display:'inline-block', width:"25%"}}>
+      <div style ={{
+        ...defaultStyle,
+        display:'inline-block',
+        width:"25%",
+        'background-color': this.props.index % 2 ? '#C0C0C0':'#444444'
+      }}>
         <img src={this.props.playList.imageUrl} style={{width:'150px'}}/>
         <h3>{this.props.playList.name}</h3>
-        <ul>
+        <ul style ={{
+          'margin-top':'10px',
+          'font-size':'14px',
+        }}>
           {
             this.props.playList.songs.map(song =><li>{song.name}</li>)
           }
@@ -225,8 +251,8 @@ this.state.playlists.filter(playList =>
           <HoursCounter playList = {playListToRender}/>
           <Filter onTextChnage={text=>this.setState({filterString:text})}/>
 
-          {playListToRender.map(playList =>
-              <PlayList playList={playList}/>
+          {playListToRender.map((playList,i) =>
+              <PlayList playList={playList} index={i}/>
           )}
 
         </div> : <button onClick={()=>window.location='http://localhost:8888/login'}
