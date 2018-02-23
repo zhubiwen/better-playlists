@@ -107,7 +107,7 @@ class PlayList extends Component {
           'font-size':'14px',
         }}>
           {
-            this.props.playList.songs.map(song =><li>{song.name}</li>)
+            this.props.playList.songs.map(song =><li>{song.name.slice(0,40)}</li>)
           }
         </ul>
       </div>
